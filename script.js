@@ -14,12 +14,14 @@ function makeCell(){
     <div class="cell-actions">
       <button title="Delete this box" class="del-cell">✕</button>
     </div>
-    <label class="photo-frame">
-      <input type="file" accept="image/*" class="file-input">
-      <span class="placeholder">Click to upload photo</span>
+    <div class="photo-frame">
+      <label class="photo-frame-label">
+        <input type="file" accept="image/*" class="file-input">
+        <span class="placeholder">Click to upload photo</span>
+      </label>
       <button type="button" class="resize-btn" title="Resize image box">↔</button>
       <span class="resize-handle" aria-hidden="true"></span>
-    </label>
+    </div>
     <div class="cell-toolbar">
       <button class="fmt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
       <button class="fmt-btn" data-cmd="italic" title="Italic (use for scientific names)"><i>I</i></button>
