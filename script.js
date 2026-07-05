@@ -17,6 +17,7 @@ function makeCell(){
     <label class="photo-frame">
       <input type="file" accept="image/*" class="file-input">
       <span class="placeholder">Click to upload photo</span>
+      <span class="resize-handle" aria-hidden="true"></span>
     </label>
     <div class="cell-toolbar">
       <button class="fmt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
@@ -27,6 +28,49 @@ function makeCell(){
   `;
 
   const frame = cell.querySelector('.photo-frame');
+  const resizeHandle = cell.querySelector('.resize-handle');
+
+  function enableResize(){
+    if(!resizeHandle) return;
+
+    let isResizing = false;
+    let startX = 0;
+    let startY = 0;
+    let startWidth = 0;
+    let startHeight = 0;
+
+    const stopResize = ()=>{
+      if(!isResizing) return;
+      isResizing = false;
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+
+    resizeHandle.addEventListener('mousedown', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      isResizing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = frame.getBoundingClientRect();
+      startWidth = rect.width;
+      startHeight = rect.height;
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'nwse-resize';
+    });
+
+    document.addEventListener('mousemove', (e)=>{
+      if(!isResizing) return;
+      const nextWidth = Math.max(140, startWidth + (e.clientX - startX));
+      const nextHeight = Math.max(120, startHeight + (e.clientY - startY));
+      frame.style.width = `${nextWidth}px`;
+      frame.style.height = `${nextHeight}px`;
+    });
+
+    document.addEventListener('mouseup', stopResize);
+  }
+
+  enableResize();
 
   function handleFile(file){
     if(!file) return;
@@ -48,11 +92,50 @@ function makeCell(){
   });
 
   cell.querySelectorAll('.fmt-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('mousedown', (e)=>{
+      e.preventDefault();
+
       const caption = cell.querySelector('.caption');
+      const selection = window.getSelection();
+      const range = selection && selection.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+
       caption.focus();
-      document.execCommand(btn.dataset.cmd, false, null);
-      btn.classList.toggle('active');
+
+      window.setTimeout(()=>{
+        if(selection && range && caption.contains(range.startContainer) && caption.contains(range.endContainer)){
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+
+        const command = btn.dataset.cmd;
+        if(command === 'italic'){
+          document.execCommand('italic', false, null);
+          if(!document.queryCommandState('italic')){
+            const activeSelection = window.getSelection();
+            if(activeSelection && activeSelection.rangeCount){
+              const currentRange = activeSelection.getRangeAt(0);
+              if(currentRange.collapsed){
+                document.execCommand('insertHTML', false, '<em></em>');
+              } else {
+                try {
+                  const em = document.createElement('em');
+                  currentRange.surroundContents(em);
+                  activeSelection.removeAllRanges();
+                  const newRange = document.createRange();
+                  newRange.selectNodeContents(em);
+                  activeSelection.addRange(newRange);
+                } catch (err) {
+                  document.execCommand('insertHTML', false, '<em></em>');
+                }
+              }
+            }
+          }
+        } else {
+          document.execCommand(command, false, null);
+        }
+
+        btn.classList.toggle('active', document.queryCommandState(command));
+      }, 0);
     });
   });
 
