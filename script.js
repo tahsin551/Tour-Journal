@@ -46,6 +46,7 @@ function makeCell(){
     const stopResize = ()=>{
       if(!isResizing) return;
       isResizing = false;
+      resizeButton.classList.remove('is-active');
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
     };
@@ -54,6 +55,7 @@ function makeCell(){
       e.preventDefault();
       e.stopPropagation();
       isResizing = true;
+      resizeButton.classList.add('is-active');
       startX = e.clientX;
       startY = e.clientY;
       const rect = frame.getBoundingClientRect();
@@ -67,15 +69,21 @@ function makeCell(){
     resizeButton.addEventListener('mousedown', beginResize);
     resizeButton.addEventListener('touchstart', beginResize, {passive:false});
 
-    document.addEventListener('mousemove', (e)=>{
+    const moveResize = (e)=>{
       if(!isResizing) return;
-      const nextWidth = Math.max(140, startWidth + (e.clientX - startX));
-      const nextHeight = Math.max(120, startHeight + (e.clientY - startY));
+      const pointX = e.touches ? e.touches[0].clientX : e.clientX;
+      const pointY = e.touches ? e.touches[0].clientY : e.clientY;
+      const nextWidth = Math.max(140, startWidth + (pointX - startX));
+      const nextHeight = Math.max(120, startHeight + (pointY - startY));
       frame.style.width = `${nextWidth}px`;
       frame.style.height = `${nextHeight}px`;
-    });
+    };
 
+    document.addEventListener('mousemove', moveResize);
+    document.addEventListener('touchmove', moveResize, {passive:false});
     document.addEventListener('mouseup', stopResize);
+    document.addEventListener('touchend', stopResize);
+    document.addEventListener('touchcancel', stopResize);
   }
 
   enableResize();

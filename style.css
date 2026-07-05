@@ -158,21 +158,28 @@ button.danger:hover{background:#fbeae5;}
   position:absolute;
   right:6px;
   bottom:6px;
-  width:30px;
-  height:30px;
+  width:42px;
+  height:42px;
   padding:0;
   border-radius:999px;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:rgba(255,255,255,.9);
-  color:var(--moss-dark);
-  border:1px solid var(--line);
-  box-shadow:0 2px 6px rgba(0,0,0,.12);
+  background:var(--moss);
+  color:#fff;
+  border:1px solid var(--moss-dark);
+  box-shadow:0 3px 8px rgba(0,0,0,.16);
   z-index:3;
   cursor:nwse-resize;
+  transition:background .15s, transform .12s, box-shadow .15s;
 }
-.resize-btn:hover{background:#fff;}
+.resize-btn:hover,
+.resize-btn:focus-visible,
+.resize-btn.is-active{
+  background:var(--moss-dark);
+  box-shadow:0 4px 10px rgba(0,0,0,.2);
+  transform:scale(1.04);
+}
 .resize-btn:active{transform:scale(0.96);} 
 .resize-handle{
   position:absolute;
