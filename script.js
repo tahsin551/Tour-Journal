@@ -107,13 +107,13 @@ function makeCell(){
       const label = frame.querySelector('.photo-frame-label');
       if(label) label.remove();
 
-      const oldImg = frame.querySelector('img');
-      if(oldImg) oldImg.remove();
+      let img = frame.querySelector('img');
+      if(!img){
+        img = document.createElement('img');
+        frame.prepend(img);
+      }
 
-      frame.style.backgroundImage = `url(${e.target.result})`;
-      frame.style.backgroundSize = 'cover';
-      frame.style.backgroundPosition = 'center';
-      frame.style.backgroundRepeat = 'no-repeat';
+      img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
