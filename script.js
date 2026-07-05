@@ -51,13 +51,24 @@ function makeCell(){
       document.body.style.cursor = '';
     };
 
+    const getPoint = (e)=>{
+      if(e.touches && e.touches.length){
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      if(e.changedTouches && e.changedTouches.length){
+        return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    };
+
     const beginResize = (e)=>{
       e.preventDefault();
       e.stopPropagation();
+      const point = getPoint(e);
       isResizing = true;
       resizeButton.classList.add('is-active');
-      startX = e.clientX;
-      startY = e.clientY;
+      startX = point.x;
+      startY = point.y;
       const rect = frame.getBoundingClientRect();
       startWidth = rect.width;
       startHeight = rect.height;
@@ -71,10 +82,9 @@ function makeCell(){
 
     const moveResize = (e)=>{
       if(!isResizing) return;
-      const pointX = e.touches ? e.touches[0].clientX : e.clientX;
-      const pointY = e.touches ? e.touches[0].clientY : e.clientY;
-      const nextWidth = Math.max(140, startWidth + (pointX - startX));
-      const nextHeight = Math.max(120, startHeight + (pointY - startY));
+      const point = getPoint(e);
+      const nextWidth = Math.max(140, startWidth + (point.x - startX));
+      const nextHeight = Math.max(120, startHeight + (point.y - startY));
       frame.style.width = `${nextWidth}px`;
       frame.style.height = `${nextHeight}px`;
     };
