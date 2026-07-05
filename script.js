@@ -69,6 +69,7 @@ function makeCell(){
       resizeButton.classList.add('is-active');
       startX = point.x;
       startY = point.y;
+      frame.style.aspectRatio = 'auto';
       const rect = frame.getBoundingClientRect();
       startWidth = rect.width;
       startHeight = rect.height;
@@ -82,6 +83,7 @@ function makeCell(){
 
     const moveResize = (e)=>{
       if(!isResizing) return;
+      e.preventDefault();
       const point = getPoint(e);
       const nextWidth = Math.max(140, startWidth + (point.x - startX));
       const nextHeight = Math.max(120, startHeight + (point.y - startY));
@@ -102,13 +104,20 @@ function makeCell(){
     if(!file) return;
     const reader = new FileReader();
     reader.onload = (ev)=>{
+      const label = frame.querySelector('.photo-frame-label');
+      if(label){
+        label.remove();
+      }
       let img = frame.querySelector('img');
       if(!img){
         img = document.createElement('img');
-        frame.querySelector('.placeholder')?.remove();
         frame.appendChild(img);
       }
       img.src = ev.target.result;
+      frame.style.backgroundImage = '';
+      frame.style.backgroundSize = '';
+      frame.style.backgroundPosition = '';
+      frame.style.backgroundRepeat = '';
     };
     reader.readAsDataURL(file);
   }
