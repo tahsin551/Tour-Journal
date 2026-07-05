@@ -258,6 +258,7 @@ button.danger:hover{background:#fbeae5;}
 #page.capturing .cell-actions{display:none;}
 #page.capturing .cell-toolbar{display:none;}
 #page.capturing .caption{border-bottom-color:transparent;}
+#page.capturing .caption.empty-caption{display:none;}
 
 @media print{
   .toolbar, .visibility-panel, .row-controls, .cell-actions, .cell-toolbar{display:none !important;}

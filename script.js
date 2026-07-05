@@ -91,51 +91,72 @@ function makeCell(){
     handleFile(e.target.files[0]);
   });
 
-  cell.querySelectorAll('.fmt-btn').forEach(btn=>{
+  const caption = cell.querySelector('.caption');
+  const formatButtons = cell.querySelectorAll('.fmt-btn');
+
+  function getTagName(command){
+    return command === 'bold' ? 'strong' : command === 'italic' ? 'em' : 'u';
+  }
+
+  function insertStyledText(text){
+    const selection = window.getSelection();
+    if(!selection || !selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    if(!range || !caption.contains(range.commonAncestorContainer)) return;
+
+    const wrapper = document.createElement(getTagName(caption.dataset.activeFormat));
+    wrapper.textContent = text;
+    range.insertNode(wrapper);
+
+    const newRange = document.createRange();
+    newRange.setStartAfter(wrapper);
+    newRange.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+  }
+
+  caption.addEventListener('keydown', (e)=>{
+    const activeFormat = caption.dataset.activeFormat;
+    if(!activeFormat || e.ctrlKey || e.metaKey || e.altKey) return;
+
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      insertStyledText('\n');
+      return;
+    }
+
+    if(e.key.length === 1){
+      e.preventDefault();
+      insertStyledText(e.key);
+    }
+  });
+
+  formatButtons.forEach(btn=>{
     btn.addEventListener('mousedown', (e)=>{
       e.preventDefault();
+      const command = btn.dataset.cmd;
+      const isActive = btn.classList.contains('active');
 
-      const caption = cell.querySelector('.caption');
-      const selection = window.getSelection();
-      const range = selection && selection.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
-
+      formatButtons.forEach(otherBtn => otherBtn.classList.remove('active'));
+      caption.dataset.activeFormat = isActive ? '' : command;
       caption.focus();
 
-      window.setTimeout(()=>{
-        if(selection && range && caption.contains(range.startContainer) && caption.contains(range.endContainer)){
-          selection.removeAllRanges();
-          selection.addRange(range);
-        }
+      if(!isActive){
+        btn.classList.add('active');
+      }
 
-        const command = btn.dataset.cmd;
-        if(command === 'italic'){
-          document.execCommand('italic', false, null);
-          if(!document.queryCommandState('italic')){
-            const activeSelection = window.getSelection();
-            if(activeSelection && activeSelection.rangeCount){
-              const currentRange = activeSelection.getRangeAt(0);
-              if(currentRange.collapsed){
-                document.execCommand('insertHTML', false, '<em></em>');
-              } else {
-                try {
-                  const em = document.createElement('em');
-                  currentRange.surroundContents(em);
-                  activeSelection.removeAllRanges();
-                  const newRange = document.createRange();
-                  newRange.selectNodeContents(em);
-                  activeSelection.addRange(newRange);
-                } catch (err) {
-                  document.execCommand('insertHTML', false, '<em></em>');
-                }
-              }
-            }
-          }
-        } else {
-          document.execCommand(command, false, null);
-        }
-
-        btn.classList.toggle('active', document.queryCommandState(command));
-      }, 0);
+      const selection = window.getSelection();
+      if(selection && selection.rangeCount && !selection.isCollapsed){
+        const range = selection.getRangeAt(0);
+        const wrapper = document.createElement(getTagName(command));
+        wrapper.appendChild(range.extractContents());
+        range.insertNode(wrapper);
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(wrapper);
+        selection.addRange(newRange);
+      }
     });
   });
 
@@ -243,8 +264,12 @@ document.getElementById('savePdfBtn').addEventListener('click', async ()=>{
   document.querySelectorAll('.cell').forEach(cell=>{
     if(cell.classList.contains('hidden-cell')) return; // already hidden by the user's own checkbox
     const hasImg = !!cell.querySelector('.photo-frame img');
-    const captionText = cell.querySelector('.caption').textContent.trim();
-    if(!hasImg && !captionText){
+    const captionEl = cell.querySelector('.caption');
+    const captionText = captionEl.textContent.replace(/\u200B/g, '').trim();
+    captionEl.classList.toggle('empty-caption', !captionText);
+
+    const shouldHide = !hasImg && !captionText;
+    if(shouldHide){
       cell.classList.add('auto-hidden-cell');
       autoHidden.push(cell);
     }
@@ -256,6 +281,7 @@ document.getElementById('savePdfBtn').addEventListener('click', async ()=>{
     backgroundColor: '#ffffff'
   });
   pageEl.classList.remove('capturing');
+  document.querySelectorAll('.caption').forEach(caption => caption.classList.remove('empty-caption'));
   autoHidden.forEach(cell => cell.classList.remove('auto-hidden-cell'));
 
   const imgData = canvas.toDataURL('image/jpeg', 0.95);
