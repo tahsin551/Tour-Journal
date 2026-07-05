@@ -87,9 +87,9 @@ button.danger:hover{background:#fbeae5;}
 .page-title .badge:focus{box-shadow:0 0 0 3px rgba(75,107,62,.3);}
 
 .grid{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:26px 22px;
+  display:flex;
+  flex-direction:column;
+  gap:26px;
 }
 
 .cell{
@@ -101,17 +101,21 @@ button.danger:hover{background:#fbeae5;}
 .cell.auto-hidden-cell{display:none;}
 
 .row-controls{
-  grid-column:1 / -1;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin:6px 0 -6px;
+  margin:6px 0 8px;
   font-size:11px;
   color:var(--muted);
 }
 .row-controls button{
   font-size:11px;
   padding:4px 10px;
+}
+.row-cells{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:22px;
 }
 .row-block.hidden-row .cell{display:none;}
 .row-block.hidden-row .row-controls{opacity:.6;}

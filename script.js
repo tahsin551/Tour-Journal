@@ -204,7 +204,6 @@ function makeRow(){
   const rowId = 'row-' + rowCounter;
   const rowWrap = document.createElement('div');
   rowWrap.className = 'row-block';
-  rowWrap.style.display = 'contents'; // acts as grouping only, cells still flow in grid
   rowWrap.dataset.id = rowId;
 
   const controls = document.createElement('div');
@@ -218,7 +217,6 @@ function makeRow(){
   `;
 
   const cellsHolder = document.createElement('div');
-  cellsHolder.style.display = 'contents';
   cellsHolder.className = 'row-cells';
   cellsHolder.dataset.parent = rowId;
 
