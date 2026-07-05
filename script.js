@@ -103,21 +103,17 @@ function makeCell(){
   function handleFile(file){
     if(!file) return;
     const reader = new FileReader();
-    reader.onload = (ev)=>{
+    reader.onload = (e)=>{
       const label = frame.querySelector('.photo-frame-label');
-      if(label){
-        label.remove();
-      }
-      let img = frame.querySelector('img');
-      if(!img){
-        img = document.createElement('img');
-        frame.appendChild(img);
-      }
-      img.src = ev.target.result;
-      frame.style.backgroundImage = '';
-      frame.style.backgroundSize = '';
-      frame.style.backgroundPosition = '';
-      frame.style.backgroundRepeat = '';
+      if(label) label.remove();
+
+      const oldImg = frame.querySelector('img');
+      if(oldImg) oldImg.remove();
+
+      frame.style.backgroundImage = `url(${e.target.result})`;
+      frame.style.backgroundSize = 'cover';
+      frame.style.backgroundPosition = 'center';
+      frame.style.backgroundRepeat = 'no-repeat';
     };
     reader.readAsDataURL(file);
   }

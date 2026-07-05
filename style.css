@@ -117,19 +117,19 @@ button.danger:hover{background:#fbeae5;}
 .row-block.hidden-row .row-controls{opacity:.6;}
 
 .photo-frame{
+  position:relative;
   width:100%;
+  height:220px;
   min-width:140px;
   min-height:120px;
-  height:220px;
-  border:2px dashed var(--line);
-  border-radius:6px;
-  background:#faf8f2;
+  overflow:hidden;
   display:flex;
   align-items:center;
   justify-content:center;
-  overflow:hidden;
+  border:2px dashed var(--line);
+  border-radius:6px;
+  background:#faf8f2;
   cursor:pointer;
-  position:relative;
 }
 .photo-frame-label{
   display:flex;
@@ -141,9 +141,12 @@ button.danger:hover{background:#fbeae5;}
   touch-action:manipulation;
 }
 .photo-frame img{
+  position:absolute;
+  inset:0;
   width:100%;
   height:100%;
   object-fit:cover;
+  object-position:center;
   display:block;
 }
 .photo-frame .placeholder{
