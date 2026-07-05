@@ -145,21 +145,42 @@ button.danger:hover{background:#fbeae5;}
   font-family:Arial, sans-serif;
 }
 .photo-frame input[type=file]{display:none;}
-.resize-handle{
+.resize-btn{
   position:absolute;
   right:6px;
   bottom:6px;
+  width:30px;
+  height:30px;
+  padding:0;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.9);
+  color:var(--moss-dark);
+  border:1px solid var(--line);
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
+  z-index:3;
+  cursor:nwse-resize;
+}
+.resize-btn:hover{background:#fff;}
+.resize-handle{
+  position:absolute;
+  right:8px;
+  bottom:8px;
   width:16px;
   height:16px;
-  border-right:2px solid var(--muted);
-  border-bottom:2px solid var(--muted);
+  border-right:2px solid var(--moss-dark);
+  border-bottom:2px solid var(--moss-dark);
   border-radius:2px;
-  cursor:nwse-resize;
-  pointer-events:auto;
+  pointer-events:none;
   z-index:2;
-  opacity:.8;
+  opacity:.95;
 }
-.photo-frame:hover .resize-handle{opacity:1;}
+.photo-frame:hover .resize-btn, .photo-frame:focus-within .resize-btn{opacity:1;}
+@media (max-width:760px){
+  .resize-btn{width:36px;height:36px;font-size:16px;}
+}
 
 .cell-toolbar{
   display:flex;
@@ -259,6 +280,8 @@ button.danger:hover{background:#fbeae5;}
 #page.capturing .cell-toolbar{display:none;}
 #page.capturing .caption{border-bottom-color:transparent;}
 #page.capturing .caption.empty-caption{display:none;}
+#page.capturing .resize-btn{display:none;}
+#page.capturing .resize-handle{display:none;}
 
 @media print{
   .toolbar, .visibility-panel, .row-controls, .cell-actions, .cell-toolbar{display:none !important;}

@@ -17,6 +17,7 @@ function makeCell(){
     <label class="photo-frame">
       <input type="file" accept="image/*" class="file-input">
       <span class="placeholder">Click to upload photo</span>
+      <button type="button" class="resize-btn" title="Resize image box">↔</button>
       <span class="resize-handle" aria-hidden="true"></span>
     </label>
     <div class="cell-toolbar">
@@ -29,9 +30,10 @@ function makeCell(){
 
   const frame = cell.querySelector('.photo-frame');
   const resizeHandle = cell.querySelector('.resize-handle');
+  const resizeButton = cell.querySelector('.resize-btn');
 
   function enableResize(){
-    if(!resizeHandle) return;
+    if(!resizeHandle || !resizeButton) return;
 
     let isResizing = false;
     let startX = 0;
@@ -46,7 +48,7 @@ function makeCell(){
       document.body.style.cursor = '';
     };
 
-    resizeHandle.addEventListener('mousedown', (e)=>{
+    const beginResize = (e)=>{
       e.preventDefault();
       e.stopPropagation();
       isResizing = true;
@@ -57,7 +59,11 @@ function makeCell(){
       startHeight = rect.height;
       document.body.style.userSelect = 'none';
       document.body.style.cursor = 'nwse-resize';
-    });
+    };
+
+    resizeHandle.addEventListener('mousedown', beginResize);
+    resizeButton.addEventListener('mousedown', beginResize);
+    resizeButton.addEventListener('touchstart', beginResize, {passive:false});
 
     document.addEventListener('mousemove', (e)=>{
       if(!isResizing) return;
