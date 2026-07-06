@@ -14,31 +14,109 @@ function makeCell(){
     <div class="cell-actions">
       <button title="Delete this box" class="del-cell">✕</button>
     </div>
-    <label class="photo-frame">
-      <input type="file" accept="image/*" class="file-input">
-      <span class="placeholder">Click to upload photo</span>
-    </label>
+    <div class="photo-frame">
+      <label class="photo-frame-label">
+        <input type="file" accept="image/*" class="file-input">
+        <span class="placeholder">Click to upload photo</span>
+      </label>
+      <button type="button" class="resize-btn" title="Resize image box">↔</button>
+      <span class="resize-handle" aria-hidden="true"></span>
+    </div>
+    <div class="caption" contenteditable="true" data-placeholder="Caption / scientific name"></div>
     <div class="cell-toolbar">
       <button class="fmt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
       <button class="fmt-btn" data-cmd="italic" title="Italic (use for scientific names)"><i>I</i></button>
       <button class="fmt-btn" data-cmd="underline" title="Underline"><u>U</u></button>
     </div>
-    <div class="caption" contenteditable="true" data-placeholder="Caption / scientific name"></div>
+    
   `;
 
   const frame = cell.querySelector('.photo-frame');
+  const resizeHandle = cell.querySelector('.resize-handle');
+  const resizeButton = cell.querySelector('.resize-btn');
+
+  function enableResize(){
+    if(!resizeHandle || !resizeButton) return;
+
+    let isResizing = false;
+    let startX = 0;
+    let startY = 0;
+    let startWidth = 0;
+    let startHeight = 0;
+
+    const stopResize = ()=>{
+      if(!isResizing) return;
+      isResizing = false;
+      resizeButton.classList.remove('is-active');
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+
+    const getPoint = (e)=>{
+      if(e.touches && e.touches.length){
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      if(e.changedTouches && e.changedTouches.length){
+        return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    };
+
+    const beginResize = (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      const point = getPoint(e);
+      isResizing = true;
+      resizeButton.classList.add('is-active');
+      startX = point.x;
+      startY = point.y;
+      frame.style.aspectRatio = 'auto';
+      const rect = frame.getBoundingClientRect();
+      startWidth = rect.width;
+      startHeight = rect.height;
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'nwse-resize';
+    };
+
+    resizeHandle.addEventListener('mousedown', beginResize);
+    resizeButton.addEventListener('mousedown', beginResize);
+    resizeButton.addEventListener('touchstart', beginResize, {passive:false});
+
+    const moveResize = (e)=>{
+      if(!isResizing) return;
+      e.preventDefault();
+      const point = getPoint(e);
+      const nextWidth = Math.max(140, startWidth + (point.x - startX));
+      const nextHeight = Math.max(120, startHeight + (point.y - startY));
+      const cell = frame.closest('.cell');
+      frame.style.aspectRatio = '4 / 3';
+      cell.style.width = `${nextWidth}px`;
+      cell.style.height = `${nextHeight + 70}px`;
+    };
+
+    document.addEventListener('mousemove', moveResize);
+    document.addEventListener('touchmove', moveResize, {passive:false});
+    document.addEventListener('mouseup', stopResize);
+    document.addEventListener('touchend', stopResize);
+    document.addEventListener('touchcancel', stopResize);
+  }
+
+  enableResize();
 
   function handleFile(file){
     if(!file) return;
     const reader = new FileReader();
-    reader.onload = (ev)=>{
+    reader.onload = (e)=>{
+      const label = frame.querySelector('.photo-frame-label');
+      if(label) label.remove();
+
       let img = frame.querySelector('img');
       if(!img){
         img = document.createElement('img');
-        frame.querySelector('.placeholder')?.remove();
-        frame.appendChild(img);
+        frame.prepend(img);
       }
-      img.src = ev.target.result;
+
+      img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
@@ -47,12 +125,72 @@ function makeCell(){
     handleFile(e.target.files[0]);
   });
 
-  cell.querySelectorAll('.fmt-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const caption = cell.querySelector('.caption');
+  const caption = cell.querySelector('.caption');
+  const formatButtons = cell.querySelectorAll('.fmt-btn');
+
+  function getTagName(command){
+    return command === 'bold' ? 'strong' : command === 'italic' ? 'em' : 'u';
+  }
+
+  function insertStyledText(text){
+    const selection = window.getSelection();
+    if(!selection || !selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    if(!range || !caption.contains(range.commonAncestorContainer)) return;
+
+    const wrapper = document.createElement(getTagName(caption.dataset.activeFormat));
+    wrapper.textContent = text;
+    range.insertNode(wrapper);
+
+    const newRange = document.createRange();
+    newRange.setStartAfter(wrapper);
+    newRange.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+  }
+
+  caption.addEventListener('keydown', (e)=>{
+    const activeFormat = caption.dataset.activeFormat;
+    if(!activeFormat || e.ctrlKey || e.metaKey || e.altKey) return;
+
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      insertStyledText('\n');
+      return;
+    }
+
+    if(e.key.length === 1){
+      e.preventDefault();
+      insertStyledText(e.key);
+    }
+  });
+
+  formatButtons.forEach(btn=>{
+    btn.addEventListener('mousedown', (e)=>{
+      e.preventDefault();
+      const command = btn.dataset.cmd;
+      const isActive = btn.classList.contains('active');
+
+      formatButtons.forEach(otherBtn => otherBtn.classList.remove('active'));
+      caption.dataset.activeFormat = isActive ? '' : command;
       caption.focus();
-      document.execCommand(btn.dataset.cmd, false, null);
-      btn.classList.toggle('active');
+
+      if(!isActive){
+        btn.classList.add('active');
+      }
+
+      const selection = window.getSelection();
+      if(selection && selection.rangeCount && !selection.isCollapsed){
+        const range = selection.getRangeAt(0);
+        const wrapper = document.createElement(getTagName(command));
+        wrapper.appendChild(range.extractContents());
+        range.insertNode(wrapper);
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(wrapper);
+        selection.addRange(newRange);
+      }
     });
   });
 
@@ -69,7 +207,6 @@ function makeRow(){
   const rowId = 'row-' + rowCounter;
   const rowWrap = document.createElement('div');
   rowWrap.className = 'row-block';
-  rowWrap.style.display = 'contents'; // acts as grouping only, cells still flow in grid
   rowWrap.dataset.id = rowId;
 
   const controls = document.createElement('div');
@@ -83,7 +220,6 @@ function makeRow(){
   `;
 
   const cellsHolder = document.createElement('div');
-  cellsHolder.style.display = 'contents';
   cellsHolder.className = 'row-cells';
   cellsHolder.dataset.parent = rowId;
 
@@ -160,22 +296,35 @@ document.getElementById('savePdfBtn').addEventListener('click', async ()=>{
   document.querySelectorAll('.cell').forEach(cell=>{
     if(cell.classList.contains('hidden-cell')) return; // already hidden by the user's own checkbox
     const hasImg = !!cell.querySelector('.photo-frame img');
-    const captionText = cell.querySelector('.caption').textContent.trim();
-    if(!hasImg && !captionText){
+    const captionEl = cell.querySelector('.caption');
+    const captionText = captionEl.textContent.replace(/\u200B/g, '').trim();
+    captionEl.classList.toggle('empty-caption', !captionText);
+
+    const shouldHide = !hasImg && !captionText;
+    if(shouldHide){
       cell.classList.add('auto-hidden-cell');
       autoHidden.push(cell);
     }
   });
 
-  const canvas = await html2canvas(pageEl, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: '#ffffff'
-  });
+ const canvas = await html2canvas(pageEl,{
+    scale:window.devicePixelRatio,
+    useCORS:true,
+    backgroundColor:"#fff",
+
+    width:pageEl.offsetWidth,
+    height:pageEl.offsetHeight,
+
+    scrollX:0,
+    scrollY:0,
+
+    removeContainer:false
+});
   pageEl.classList.remove('capturing');
+  document.querySelectorAll('.caption').forEach(caption => caption.classList.remove('empty-caption'));
   autoHidden.forEach(cell => cell.classList.remove('auto-hidden-cell'));
 
-  const imgData = canvas.toDataURL('image/jpeg', 0.95);
+  const imgData = canvas.toDataURL('image/png');
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({
     orientation: 'portrait',
@@ -185,21 +334,8 @@ document.getElementById('savePdfBtn').addEventListener('click', async ()=>{
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const imgWidth = pageWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  let heightLeft = imgHeight;
-  let position = 0;
-
-  pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-  heightLeft -= pageHeight;
-
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-  }
+  pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
 
   const titleText = document.getElementById('dayTitle').textContent.trim().replace(/\s+/g,'_') || 'field_journal';
   pdf.save(titleText + '.pdf');
