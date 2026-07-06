@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Field Journal — Photo Page Maker</title>
+<title>Field Journal — Custom Layout</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -13,42 +13,25 @@
 <nav class="site-nav">
   <span class="brand">🌿 Field Journal</span>
   <span style="display:flex; gap:10px;">
-    <a href="layout.html" class="nav-cta">Custom layout page</a>
-    <a href="#builder" class="nav-cta">Start a page</a>
+    <a href="index.html" class="nav-cta">3×3 grid page</a>
   </span>
 </nav>
 
 <header class="hero">
-  <span class="hero-eyebrow">Study tour · field notes · photo pages</span>
-  <h1 class="hero-title">Turn your field photos <br>into a journal page</h1>
+  <span class="hero-eyebrow">Custom layout · study tour · field notes</span>
+  <h1 class="hero-title">A page with a<br>full-width photo</h1>
   <p class="hero-sub">
-    Upload photos into a 3×3 grid, label each one, italicize the scientific
-    names, hide the boxes you don't need, and save the whole page as a PDF —
-    all in your browser, nothing leaves your device.
+    Two boxes side by side, then two more, then one wide box at the bottom
+    that spans the full page — good for a close-up shot or a group photo.
+    Still fits neatly on one A4 page.
   </p>
   <a href="#builder" class="hero-cta">Start building ↓</a>
-
-  <div class="hero-steps">
-    <div class="hero-step">
-      <span class="hero-step-num">01</span>
-      <p>Upload a photo into each box</p>
-    </div>
-    <div class="hero-step">
-      <span class="hero-step-num">02</span>
-      <p>Write a caption, italicize the species name</p>
-    </div>
-    <div class="hero-step">
-      <span class="hero-step-num">03</span>
-      <p>Hide unused boxes, then save as PDF</p>
-    </div>
-  </div>
 </header>
 
 <main id="builder">
   <div class="toolbar">
     <div class="group">
-      <label>Add</label>
-      <button id="addRowBtn">+ Add row</button>
+      <label>Page</label>
       <button class="secondary" id="resetBtn">Reset page</button>
     </div>
     <div class="group">
@@ -61,7 +44,7 @@
     <h1 class="page-title">
       <span class="badge" contenteditable="true" id="dayTitle">DAY 01</span>
     </h1>
-    <div class="grid" id="grid"><!-- rows injected by JS --></div>
+    <div class="grid custom-grid" id="grid"><!-- boxes injected by JS --></div>
   </div>
 
   <details class="visibility-panel">
@@ -75,6 +58,6 @@
 </footer>
 
 <script src="cell.js"></script>
-<script src="index.js"></script>
+<script src="layout.js"></script>
 </body>
 </html>
