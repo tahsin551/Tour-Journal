@@ -60,15 +60,15 @@ button.danger{
 button.danger:hover{background:#fbeae5;}
 
 #page{
-  max-width:1000px;
-  margin:0 auto;
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:4px;
-  padding:40px 44px 50px;
-  box-shadow:0 2px 14px rgba(0,0,0,0.06);
+    width:794px;
+    min-height:1123px;
+    margin:0 auto;
+    transform-origin:top center;
+    background:#fff;
+    border:1px solid var(--line);
+    padding:40px;
+    box-sizing:border-box;
 }
-
 .page-title{
   text-align:center;
   margin:0 0 30px;
@@ -87,11 +87,13 @@ button.danger:hover{background:#fbeae5;}
 .page-title .badge:focus{box-shadow:0 0 0 3px rgba(75,107,62,.3);}
 
 .grid{
-  display:flex;
-  flex-direction:column;
-  gap:26px;
-}
+    display:flex;
+    flex-direction:column;
 
+    height:calc(100% - 90px);
+
+    justify-content:space-between;
+}
 .cell{
   position:relative;
   display:flex;
@@ -203,6 +205,16 @@ button.danger:hover{background:#fbeae5;}
   opacity:.95;
 }
 .photo-frame:hover .resize-btn, .photo-frame:focus-within .resize-btn{opacity:1;}
+@media (max-width:820px){
+  #page{
+    transform:scale(calc((100vw - 20px) / 794));
+  }
+  #builder{
+    overflow-x:auto;
+    padding-bottom:40px;
+  }
+}
+
 @media (max-width:760px){
   .resize-btn{width:36px;height:36px;font-size:16px;}
 }

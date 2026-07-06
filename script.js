@@ -87,8 +87,8 @@ function makeCell(){
       const point = getPoint(e);
       const nextWidth = Math.max(140, startWidth + (point.x - startX));
       const nextHeight = Math.max(120, startHeight + (point.y - startY));
-      frame.style.width = `${nextWidth}px`;
-      frame.style.height = `${nextHeight}px`;
+     frame.style.aspectRatio = "4 / 3";
+     frame.style.height = `${nextHeight}px`;
     };
 
     document.addEventListener('mousemove', moveResize);
@@ -305,9 +305,11 @@ document.getElementById('savePdfBtn').addEventListener('click', async ()=>{
   });
 
   const canvas = await html2canvas(pageEl, {
-    scale: 2,
+    scale: 4,
     useCORS: true,
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    scrollX: 0,
+    scrollY: 0
   });
   pageEl.classList.remove('capturing');
   document.querySelectorAll('.caption').forEach(caption => caption.classList.remove('empty-caption'));
@@ -323,21 +325,8 @@ document.getElementById('savePdfBtn').addEventListener('click', async ()=>{
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const imgWidth = pageWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  let heightLeft = imgHeight;
-  let position = 0;
-
-  pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-  heightLeft -= pageHeight;
-
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-  }
+  pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
 
   const titleText = document.getElementById('dayTitle').textContent.trim().replace(/\s+/g,'_') || 'field_journal';
   pdf.save(titleText + '.pdf');
